@@ -77,18 +77,16 @@ func DefaultConfig() *TranslationConfig {
 
 var errTokenIsNone = errors.New("token is none")
 
-// Please use multiple tokens to separate, and a token will be randomly selected at this time
 func Translate(text, To, Token string) (string, error) {
 	return TranslateWithConfig(text, To, Token, DefaultConfig())
 }
 
-// Please use multiple tokens to separate, and a token will be randomly selected at this time
 func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string, error) {
 	if Token == "" {
 		return "", errTokenIsNone
 	}
 	cfg.correct()
-	resp, err := gpt3.NewClient(getToken(Token)).CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
+	resp, err := gpt3.NewClient(Token).CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
 		Model:            cfg.Model,
 		MaxTokens:        cfg.MaxTokens,
 		Temperature:      cfg.Temperature,
