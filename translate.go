@@ -21,6 +21,7 @@ type Detected struct {
 
 type TranslationConfig struct {
 	Ctx                 context.Context
+	Model               string // GPT3Dot5Turbo0301,GPT3Dot5Turbo
 	MaxTokens           int
 	Temperature         float32 // 0-2, 越高越随机
 	TopP                float32 // 0-1,0.1表示仅考虑包含最高前10%概率质量的令牌,推荐1.0
@@ -35,11 +36,16 @@ const (
 	DefaultTopP             = 1.0
 	DefaultPresencePenalty  = 1.0
 	DefaultFrequencyPenalty = 1.0
+	GPT3Dot5Turbo0301       = gpt3.GPT3Dot5Turbo0301
+	GPT3Dot5Turbo           = gpt3.GPT3Dot5Turbo
 )
 
 func (cfg *TranslationConfig) correct() {
 	if cfg.Ctx == nil {
 		cfg.Ctx = context.Background()
+	}
+	if cfg.Model == "" {
+		cfg.Model = GPT3Dot5Turbo
 	}
 	if cfg.MaxTokens < 0 || cfg.MaxTokens > 4096 {
 		cfg.MaxTokens = DefaultMaxTokens
@@ -83,7 +89,7 @@ func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string
 	}
 	cfg.correct()
 	resp, err := gpt3.NewClient(getToken(Token)).CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
-		Model:            gpt3.GPT3Dot5Turbo0301,
+		Model:            cfg.Model,
 		MaxTokens:        cfg.MaxTokens,
 		Temperature:      cfg.Temperature,
 		TopP:             cfg.TopP,
