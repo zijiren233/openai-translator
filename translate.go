@@ -2,6 +2,7 @@ package openaitranslate
 
 import (
 	"context"
+	"errors"
 
 	gpt3 "github.com/sashabaranov/go-openai"
 )
@@ -65,14 +66,20 @@ func DefaultConfig() *TranslationConfig {
 	}
 }
 
+var errTokenIsNone = errors.New("token is none")
+
+// Please use multiple tokens to separate, and a token will be randomly selected at this time
 func Translate(text, To, Token string) (string, error) {
 	return TranslateWithConfig(text, To, Token, DefaultConfig())
 }
 
+// Please use multiple tokens to separate, and a token will be randomly selected at this time
 func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string, error) {
-	c := gpt3.NewClient(Token)
+	if Token == "" {
+		return "", errTokenIsNone
+	}
 	cfg.correct()
-	resp, err := c.CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
+	resp, err := gpt3.NewClient(getToken(Token)).CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
 		Model:            gpt3.GPT3Dot5Turbo0301,
 		MaxTokens:        cfg.MaxTokens,
 		Temperature:      cfg.Temperature,

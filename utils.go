@@ -2,6 +2,8 @@ package openaitranslate
 
 import (
 	"fmt"
+	"math/rand"
+	"strings"
 
 	gpt3 "github.com/sashabaranov/go-openai"
 	"golang.org/x/text/language"
@@ -123,4 +125,13 @@ func generateChat(text, To string, params *TranslationConfig) []gpt3.ChatComplet
 		{Role: "assistant", Content: assistantPrompt},
 		{Role: "user", Content: text},
 	}
+}
+
+func getToken(tokens string) string {
+	s := strings.Split(tokens, ",")
+	l := len(s)
+	if l == 0 {
+		return ""
+	}
+	return strings.TrimSpace(s[rand.Intn(l)])
 }
