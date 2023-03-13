@@ -103,10 +103,14 @@ func getLangName(langCode string) string {
 	if langCode == "" {
 		return ""
 	}
-	if name := langMap[langCode]; name == "" {
-		return langCode
-	} else {
+	if name, ok := langMap[langCode]; ok {
 		return name
+	} else {
+		t, err := language.Parse(langCode)
+		if err != nil {
+			return langCode
+		}
+		return langMap[t.String()]
 	}
 }
 
