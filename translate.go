@@ -54,18 +54,33 @@ func (cfg *TranslationConfig) correct() {
 	}
 }
 
-func Translate(text, To, Token string, cfg TranslationConfig) (string, error) {
+func DefaultConfig() *TranslationConfig {
+	return &TranslationConfig{
+		Ctx:              context.Background(),
+		MaxTokens:        DefaultMaxTokens,
+		Temperature:      DefaultTemperature,
+		TopP:             DefaultTopP,
+		PresencePenalty:  DefaultPresencePenalty,
+		FrequencyPenalty: DefaultFrequencyPenalty,
+	}
+}
+
+func Translate(text, To, Token string) (string, error) {
+	return TranslateWithConfig(text, To, Token, DefaultConfig())
+}
+
+func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string, error) {
 	c := gpt3.NewClient(Token)
 	cfg.correct()
 	resp, err := c.CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
 		Model:            gpt3.GPT3Dot5Turbo0301,
-		MaxTokens:        1000,
-		Temperature:      0,
-		TopP:             1,
-		PresencePenalty:  1,
-		FrequencyPenalty: 1,
+		MaxTokens:        cfg.MaxTokens,
+		Temperature:      cfg.Temperature,
+		TopP:             cfg.TopP,
+		PresencePenalty:  cfg.PresencePenalty,
+		FrequencyPenalty: cfg.FrequencyPenalty,
 
-		Messages: generateChat(text, To, &cfg),
+		Messages: generateChat(text, To, cfg),
 	})
 	if err != nil {
 		return "", err
