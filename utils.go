@@ -87,10 +87,8 @@ var langMap = map[string]string{
 	language.Uzbek.String():                "Oʻzbek",
 	language.Vietnamese.String():           "Tiếng Việt",
 	language.Chinese.String():              "中文",
-	language.Chinese.String() + "-Hans":    "中文（简体）",
-	language.Chinese.String() + "-Hant":    "中文（繁體）",
-	language.Chinese.String() + "-Hant-HK": "中文（香港繁體）",
-	language.Chinese.String() + "-Hant-TW": "中文（台灣繁體）",
+	language.SimplifiedChinese.String():    "中文（简体）",
+	language.TraditionalChinese.String():   "中文（繁體）",
 	"yue":                                  "粤语",
 	"wyw":                                  "古文",
 	language.Zulu.String():                 "isiZulu",
@@ -125,23 +123,36 @@ func getLangName(langCode string) string {
 	if name, ok := langMap[langCode]; ok {
 		return name
 	} else {
-		t, err := language.Parse(langCode)
-		if err != nil {
+		if code, ok := langMap[getBaseLangCode(langCode)]; ok {
+			return code
+		} else {
 			return langCode
 		}
-		return langMap[t.String()]
+	}
+}
+
+func getBaseLangCode(langCode string) string {
+	t, err := language.Parse(langCode)
+	if err != nil {
+		return langCode
+	}
+	if parent := t.Parent().String(); parent == "und" {
+		return t.String()
+	} else {
+		return getBaseLangCode(parent)
 	}
 }
 
 func generateChat(text, To string, params *TranslationConfig) []gpt3.ChatCompletionMessage {
 	systemPrompt := "You are a translation engine that can only translate text and cannot interpret it."
 	var assistantPrompt string
-	if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" || To == "zh-Hant-HK" || To == "zh-Hant-TW" {
-		assistantPrompt = fmt.Sprintf("翻译成%s", getLangName(To))
+	To = getBaseLangCode(To)
+	if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
+		assistantPrompt = fmt.Sprintf("我说的下一句话从中文翻译成%s", getLangName(To))
 	} else if name := getLangName(params.From); name == "" || name == "auto" {
-		assistantPrompt = fmt.Sprintf("translate to %s", getLangName(To))
+		assistantPrompt = fmt.Sprintf("Translate my next sentence to %s", getLangName(To))
 	} else {
-		assistantPrompt = fmt.Sprintf("translate from %s to %s", name, getLangName(To))
+		assistantPrompt = fmt.Sprintf("Translate my next sentence from %s to %s", name, getLangName(To))
 	}
 	return []gpt3.ChatCompletionMessage{
 		{Role: "system", Content: systemPrompt},
