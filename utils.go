@@ -108,8 +108,8 @@ func GetLangMap() map[string]string {
 	return copyMap(langMap)
 }
 
-func copyMap[T comparable](m map[string]T) map[string]T {
-	newMap := make(map[string]T)
+func copyMap[K, V comparable](m map[K]V) map[K]V {
+	newMap := make(map[K]V)
 	for k, v := range m {
 		newMap[k] = v
 	}
