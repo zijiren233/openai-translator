@@ -31,6 +31,12 @@ type TranslationConfig struct {
 
 type Option func(*TranslationConfig)
 
+func WithCtx(Ctx context.Context) Option {
+	return func(tc *TranslationConfig) {
+		tc.Ctx = Ctx
+	}
+}
+
 func WithFrom(From string) Option {
 	return func(tc *TranslationConfig) {
 		tc.From = From
