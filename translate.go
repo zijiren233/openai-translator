@@ -77,8 +77,12 @@ func DefaultConfig() *TranslationConfig {
 
 var errTokenIsNone = errors.New("token is none")
 
-func Translate(text, To, Token string) (string, error) {
-	return TranslateWithConfig(text, To, Token, DefaultConfig())
+func Translate(text, To, Token string, From ...string) (string, error) {
+	cfg := DefaultConfig()
+	if len(From) != 0 {
+		cfg.From = From[0]
+	}
+	return TranslateWithConfig(text, To, Token, cfg)
 }
 
 func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string, error) {
