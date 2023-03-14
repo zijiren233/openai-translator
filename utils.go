@@ -2,10 +2,13 @@ package openaitranslate
 
 import (
 	"fmt"
+	"sync"
 
 	gpt3 "github.com/sashabaranov/go-openai"
 	"golang.org/x/text/language"
 )
+
+var langMapLock = &sync.RWMutex{}
 
 var langMap = map[string]string{
 	language.Afrikaans.String():            "Afrikaans",
@@ -94,10 +97,28 @@ var langMap = map[string]string{
 }
 
 func RegistLanguage(langCode, langName string) {
+	langMapLock.Lock()
+	defer langMapLock.Unlock()
 	langMap[langCode] = langName
 }
 
+func GetLangMap() map[string]string {
+	langMapLock.RLock()
+	defer langMapLock.RUnlock()
+	return copyMap(langMap)
+}
+
+func copyMap[T comparable](m map[string]T) map[string]T {
+	newMap := make(map[string]T)
+	for k, v := range m {
+		newMap[k] = v
+	}
+	return newMap
+}
+
 func getLangName(langCode string) string {
+	langMapLock.RLock()
+	defer langMapLock.RUnlock()
 	if langCode == "" {
 		return ""
 	}

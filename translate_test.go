@@ -12,3 +12,9 @@ func TestTranslate(t *testing.T) {
 	}
 	t.Logf("Text: %s\n", result)
 }
+
+func TestRegistLanguage(t *testing.T) {
+	t.Log(GetLangMap())
+	RegistLanguage("zh-CN", "简体中文")
+	t.Log(GetLangMap())
+}
