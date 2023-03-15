@@ -20,6 +20,7 @@ type Detected struct {
 
 type TranslationConfig struct {
 	Ctx                 context.Context
+	Debug               bool
 	Model               string // GPT3Dot5Turbo0301,GPT3Dot5Turbo
 	MaxTokens           int
 	Temperature         float32 // 0-2, 越高越随机
@@ -34,6 +35,12 @@ type Option func(*TranslationConfig)
 func WithCtx(Ctx context.Context) Option {
 	return func(tc *TranslationConfig) {
 		tc.Ctx = Ctx
+	}
+}
+
+func WithDebug() Option {
+	return func(tc *TranslationConfig) {
+		tc.Debug = true
 	}
 }
 

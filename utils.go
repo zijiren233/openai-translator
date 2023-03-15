@@ -2,6 +2,7 @@ package openaitranslate
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
 	gpt3 "github.com/sashabaranov/go-openai"
@@ -147,16 +148,26 @@ func generateChat(text, To string, params *TranslationConfig) []gpt3.ChatComplet
 	systemPrompt := "You are a translation engine that can only translate text and cannot interpret it."
 	var assistantPrompt string
 	To = getBaseLangCode(To)
-	if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
-		assistantPrompt = fmt.Sprintf("我说的下一句话从中文翻译成%s", getLangName(To))
-	} else if name := getLangName(params.From); name == "" || name == "auto" {
-		assistantPrompt = fmt.Sprintf("Translate my next sentence to %s", getLangName(To))
+	if name := getLangName(params.From); name == "" || name == "auto" {
+		if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
+			assistantPrompt = fmt.Sprintf("我说的下一句话翻译成%s", getLangName(To))
+		} else {
+			assistantPrompt = fmt.Sprintf("Translate my next sentence to %s", getLangName(To))
+		}
 	} else {
-		assistantPrompt = fmt.Sprintf("Translate my next sentence from %s to %s", name, getLangName(To))
+		if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
+			assistantPrompt = fmt.Sprintf("我说的下一句话从%s翻译成%s", name, getLangName(To))
+		} else {
+			assistantPrompt = fmt.Sprintf("Translate my next sentence from %s to %s", name, getLangName(To))
+		}
 	}
-	return []gpt3.ChatCompletionMessage{
+	chat := []gpt3.ChatCompletionMessage{
 		{Role: "system", Content: systemPrompt},
 		{Role: "user", Content: assistantPrompt},
 		{Role: "user", Content: text},
 	}
+	if params.Debug {
+		log.Println(chat)
+	}
+	return chat
 }
