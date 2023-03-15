@@ -87,11 +87,11 @@ var langMap = map[string]string{
 	language.Urdu.String():                 "اردو",
 	language.Uzbek.String():                "Oʻzbek",
 	language.Vietnamese.String():           "Tiếng Việt",
-	language.Chinese.String():              "中文",
+	language.Chinese.String():              "中文（简体）",
 	language.SimplifiedChinese.String():    "中文（简体）",
 	language.TraditionalChinese.String():   "中文（繁體）",
-	"yue":                                  "粤语",
-	"wyw":                                  "古文",
+	"yue":                                  "中文（粤语）",
+	"wyw":                                  "中文（古文-文言文）",
 	language.Zulu.String():                 "isiZulu",
 }
 

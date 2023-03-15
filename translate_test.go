@@ -10,13 +10,12 @@ func TestTranslate(t *testing.T) {
 		text, from, to string
 	}{
 		{`Oh yeah! I'm a translator!`, "", "zh"},
-		{`Oh yeah! I'm a translator!`, "", "zh-CN"},
-		{`Oh yeah! I'm a translator!`, "", "zh-TW"},
+		{`Oh yeah! I'm a translator!`, "", "wyw"},
 		{`Oh yeah! I'm a translator!`, "", "ja"},
 		{`Oh yeah! I'm a translator!`, "", "de"},
 		{`Oh yeah! I'm a translator!`, "", "fr"},
 	} {
-		result, err := Translate(unit.text, unit.to, os.Getenv("OPENAI_API_KEY"), WithFrom(unit.from))
+		result, err := Translate(unit.text, unit.to, os.Getenv("OPENAI_API_KEY"), WithFrom(unit.from), WithDebug())
 		if err != nil {
 			t.Fatal(err)
 		}
