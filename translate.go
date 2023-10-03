@@ -1,4 +1,4 @@
-package openaitranslate
+package openaitranslator
 
 import (
 	"errors"
