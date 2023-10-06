@@ -1,12 +1,11 @@
 package openaitranslator
 
 import (
-	"errors"
+	"fmt"
+	"log"
 
-	gpt3 "github.com/sashabaranov/go-openai"
+	"github.com/sashabaranov/go-openai"
 )
-
-var errTokenIsNone = errors.New("token is none")
 
 func Translate(text, To, Token string, opt ...Option) (string, error) {
 	cfg := DefaultConfig()
@@ -17,11 +16,16 @@ func Translate(text, To, Token string, opt ...Option) (string, error) {
 }
 
 func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string, error) {
-	if Token == "" {
-		return "", errTokenIsNone
+	url, err := parseOpenaiAPIURLv1(cfg.Url)
+	if err != nil {
+		return "", err
 	}
 	cfg.correct()
-	resp, err := gpt3.NewClient(Token).CreateChatCompletion(cfg.Ctx, gpt3.ChatCompletionRequest{
+	openaiConf := openai.DefaultConfig(Token)
+	if url != "" {
+		openaiConf.BaseURL = url
+	}
+	resp, err := openai.NewClientWithConfig(openaiConf).CreateChatCompletion(cfg.Ctx, openai.ChatCompletionRequest{
 		Model:            cfg.Model,
 		MaxTokens:        cfg.MaxTokens,
 		Temperature:      cfg.Temperature,
@@ -35,4 +39,32 @@ func TranslateWithConfig(text, To, Token string, cfg *TranslationConfig) (string
 		return "", err
 	}
 	return resp.Choices[0].Message.Content, nil
+}
+
+func generateChat(text, To string, params *TranslationConfig) []openai.ChatCompletionMessage {
+	systemPrompt := "You are a translation engine that can only translate text and cannot interpret it."
+	var assistantPrompt string
+	To = getBaseLangCode(To)
+	if name := getLangName(params.From); name == "" || name == "auto" {
+		if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
+			assistantPrompt = fmt.Sprintf("我说的下一句话翻译成%s", getLangName(To))
+		} else {
+			assistantPrompt = fmt.Sprintf("Translate my next sentence to %s", getLangName(To))
+		}
+	} else {
+		if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
+			assistantPrompt = fmt.Sprintf("我说的下一句话从%s翻译成%s", name, getLangName(To))
+		} else {
+			assistantPrompt = fmt.Sprintf("Translate my next sentence from %s to %s", name, getLangName(To))
+		}
+	}
+	chat := []openai.ChatCompletionMessage{
+		{Role: "system", Content: systemPrompt},
+		{Role: "user", Content: assistantPrompt},
+		{Role: "user", Content: text},
+	}
+	if params.Debug {
+		log.Println(chat)
+	}
+	return chat
 }

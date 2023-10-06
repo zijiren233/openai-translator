@@ -1,11 +1,9 @@
 package openaitranslator
 
 import (
-	"fmt"
-	"log"
+	"net/url"
 	"sync"
 
-	gpt3 "github.com/sashabaranov/go-openai"
 	"golang.org/x/text/language"
 )
 
@@ -144,30 +142,15 @@ func getBaseLangCode(langCode string) string {
 	}
 }
 
-func generateChat(text, To string, params *TranslationConfig) []gpt3.ChatCompletionMessage {
-	systemPrompt := "You are a translation engine that can only translate text and cannot interpret it."
-	var assistantPrompt string
-	To = getBaseLangCode(To)
-	if name := getLangName(params.From); name == "" || name == "auto" {
-		if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
-			assistantPrompt = fmt.Sprintf("我说的下一句话翻译成%s", getLangName(To))
-		} else {
-			assistantPrompt = fmt.Sprintf("Translate my next sentence to %s", getLangName(To))
-		}
+func parseOpenaiAPIURLv1(u string) (string, error) {
+	if u == "" {
+		return openaiAPIURLv1, nil
 	} else {
-		if To == "wyw" || To == "yue" || To == "zh" || To == "zh-Hans" || To == "zh-Hant" {
-			assistantPrompt = fmt.Sprintf("我说的下一句话从%s翻译成%s", name, getLangName(To))
-		} else {
-			assistantPrompt = fmt.Sprintf("Translate my next sentence from %s to %s", name, getLangName(To))
+		up, err := url.Parse(u)
+		if err != nil {
+			return "", err
 		}
+		up.Path = "/v1"
+		return up.String(), nil
 	}
-	chat := []gpt3.ChatCompletionMessage{
-		{Role: "system", Content: systemPrompt},
-		{Role: "user", Content: assistantPrompt},
-		{Role: "user", Content: text},
-	}
-	if params.Debug {
-		log.Println(chat)
-	}
-	return chat
 }

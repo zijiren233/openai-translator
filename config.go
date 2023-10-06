@@ -3,7 +3,11 @@ package openaitranslator
 import (
 	"context"
 
-	gpt3 "github.com/sashabaranov/go-openai"
+	"github.com/sashabaranov/go-openai"
+)
+
+const (
+	openaiAPIURLv1 = "https://api.openai.com/v1"
 )
 
 type Translated struct {
@@ -20,6 +24,7 @@ type Detected struct {
 
 type TranslationConfig struct {
 	Ctx                 context.Context
+	Url                 string
 	Debug               bool
 	Model               string // GPT3Dot5Turbo0301,GPT3Dot5Turbo
 	MaxTokens           int
@@ -31,6 +36,12 @@ type TranslationConfig struct {
 }
 
 type Option func(*TranslationConfig)
+
+func WithUrl(Url string) Option {
+	return func(tc *TranslationConfig) {
+		tc.Url = Url
+	}
+}
 
 func WithCtx(Ctx context.Context) Option {
 	return func(tc *TranslationConfig) {
@@ -92,8 +103,8 @@ const (
 	DefaultTopP             = 1.0
 	DefaultPresencePenalty  = 1.0
 	DefaultFrequencyPenalty = 1.0
-	GPT3Dot5Turbo0301       = gpt3.GPT3Dot5Turbo0301
-	GPT3Dot5Turbo           = gpt3.GPT3Dot5Turbo
+	GPT3Dot5Turbo0301       = openai.GPT3Dot5Turbo0301
+	GPT3Dot5Turbo           = openai.GPT3Dot5Turbo
 )
 
 func (cfg *TranslationConfig) correct() {
